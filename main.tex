@@ -59,37 +59,44 @@ Para el PFC tomaría la comunicación por eventos en tareas que no necesitan res
 \section*{Evidencias de autoría}
 
 \subsection*{Captura de la fuente principal}
-Fragmentos subrayados de la fuente principal \cite{perez2021wix}. Amarillo: arquitectura anterior y problemas; verde: beneficios; naranja: desafíos.
+Fragmentos subrayados de la fuente principal \cite{perez2021wix}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{01_arquitectura_anterior.png}
+  \includegraphics[width=0.8\textwidth]{01_arquitectura_anterior.png}
   \caption{Arquitectura síncrona de Wix y escala en 2014.}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{02_problemas_sincrono.png}
+  \includegraphics[width=0.8\textwidth]{02_problemas_sincrono.png}\\[4pt]
+  \includegraphics[width=0.8\textwidth]{02b_problemas_sincrono.png}\\[4pt]
+  \includegraphics[width=0.8\textwidth]{02c_problemas_sincrono.png}
   \caption{Problemas del modelo síncrono: acoplamiento y fallas en cascada.}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{03_cambio_a_kafka.png}
+  \includegraphics[width=0.8\textwidth]{03_cambio_a_kafka.png}\\[4pt]
+  \includegraphics[width=0.8\textwidth]{03b_cambio_a_kafka.png}
   \caption{Crecimiento de la plataforma y adopción de Apache Kafka.}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{04_coreografia_beneficios.png}
+  \includegraphics[width=0.8\textwidth]{04_coreografia_beneficios.png}\\[4pt]
+  \includegraphics[width=0.8\textwidth]{04b_coreografia_beneficios.png}
   \caption{Paso de orquestación a coreografía y beneficios.}
 \end{figure}
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.85\textwidth]{05_desafios.png}
+  \includegraphics[width=0.8\textwidth]{05_desafios.png}\\[4pt]
+  \includegraphics[width=0.8\textwidth]{05b_desafios.png}
   \caption{Desafíos de la comunicación asíncrona y soluciones.}
 \end{figure}
+
+\clearpage
 
 \subsection*{Sistema conocido de primera mano con el mismo estilo}
 Un ejemplo que conozco es GitHub Actions, que permite automatizar tareas a partir de eventos dentro de un repositorio. Cuando hago un \textit{push} para subir cambios, GitHub detecta ese evento y ejecuta automáticamente un \textit{workflow} que puede correr pruebas, revisar el código o desplegar la aplicación. También pueden activarse notificaciones e integraciones externas, si están configuradas. Lo interesante es que el \textit{push} no espera a que estas tareas terminen, porque cada una se ejecuta de forma independiente. Es la misma idea de coreografía que usa Wix: quien genera el evento no dirige a los demás, sino que cada parte reacciona por su cuenta.
