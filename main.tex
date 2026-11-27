@@ -30,28 +30,28 @@
   \vspace{1cm}
   {\large Caso: Wix — Arquitectura orientada a eventos (EDA)\par}
   \vfill
-  {\large Estudiante: Aldair \textit{[apellidos]}\par}
-  {\large Docente: \textit{[nombre del docente]}\par}
-  {\large Paralelo: \textit{[paralelo]}\par}
+  {\large Estudiante: Herrera Barco Humberto Aldair\par}
+  {\large Docente: Guerrero Ulloa Gleiston Ciceron\par}
+  {\large Paralelo: A\par}
   \vspace{1cm}
   {\large Quevedo, noviembre de 2026\par}
 \end{titlepage}
 
 % ---------------- Análisis (1 página) ----------------
 \section*{Descripción del caso}
-% Empresa, sistema y escala, con cifras citadas.
+Wix es una plataforma para crear sitios web que, con el tiempo, tuvo que adaptar su backend al crecimiento de sus usuarios. En 2014 tenía alrededor de 60 millones de propietarios de sitios y unos 250 microservicios en producción, que atendían cerca de 700 millones de peticiones HTTP al día. Años después, la plataforma llegó a unos 200 millones de propietarios, más de 2000 clústeres de microservicios y alrededor de 500 mil millones de peticiones diarias \cite{perez2021wix}. Este caso analiza cómo cambió la comunicación entre esos microservicios para soportar ese crecimiento.
 
 \section*{Por qué eligió EDA y qué tenía antes}
-% Motivación del cambio y arquitectura anterior.
+Antes, la comunicación entre servicios era síncrona y seguía un patrón de orquestación: un servicio, como \textit{BookingService}, controlaba todo el flujo y llamaba a los demás en orden. Era fácil de entender y probar, pero dejaba a los servicios muy acoplados, ya que todos debían estar disponibles al mismo tiempo. Con más tráfico, una falla en un servicio se propagaba a los demás; por ejemplo, \textit{UsersService} llegó a quedarse sin memoria. Por eso, en 2015 Wix incorporó Apache Kafka como bus de mensajes y pasó a un modelo de coreografía, donde cada servicio reacciona a los eventos que le interesan \cite{perez2021wix}.
 
 \section*{Beneficios obtenidos}
-% Datos medibles cuando la fuente los ofrezca.
+Al publicar eventos, el productor ya no depende de quién los consume, y eso aisló las fallas entre servicios. Kafka funciona como un \textit{buffer} que absorbe los picos de carga, y para escalar basta con agregar consumidores. Entre 2016 y 2021 los productores de Kafka crecieron unas 40 veces y los flujos asíncronos unas 30 veces en cinco años. Además, como Kafka guarda los eventos en un log, un equipo puede crear un nuevo grupo de consumidores para una funcionalidad sin tocar los servicios existentes \cite{perez2021wix}.
 
 \section*{Desafíos y cómo los resolvió}
-% Problemas encontrados y soluciones aplicadas.
+El cambio trajo más complejidad: rastrear un flujo entre varios servicios es más difícil y los datos tardan en replicarse, por lo que Wix diseñó la interfaz para explicar esas demoras al usuario. Para los mensajes duplicados o fuera de orden, hizo que los consumidores fueran idempotentes. Como el bus se volvió un punto único de falla, creó un productor que guarda primero los eventos en disco local antes de enviarlos a Kafka \cite{perez2021wix}. Estos problemas de consistencia también aparecen como recurrentes en la industria \cite{laigner2021data}.
 
 \section*{Aplicación al PFC}
-% Qué tomaría para el PFC del equipo y qué no, y por qué.
+Para el PFC tomaría la comunicación por eventos en tareas que no necesitan respuesta inmediata, como notificaciones, y los consumidores idempotentes para evitar procesar dos veces el mismo evento. No tomaría la infraestructura de Kafka a la escala de Wix: un estudio que comparó la misma aplicación con EDA y como monolito encontró que el monolito consumía menos recursos y respondía más rápido \cite{cabane2024impact}. EDA se justifica cuando el acoplamiento ya es un problema real, y en un proyecto del tamaño del nuestro mantendría síncronas las operaciones que necesitan una respuesta inmediata.
 
 \newpage
 
@@ -59,17 +59,43 @@
 \section*{Evidencias de autoría}
 
 \subsection*{Captura de la fuente principal}
-% \begin{figure}[h]
-%   \centering
-%   \includegraphics[width=\textwidth]{fuente_principal.png}
-%   \caption{Fragmentos subrayados de la fuente principal del caso.}
-% \end{figure}
+Fragmentos subrayados de la fuente principal \cite{perez2021wix}. Amarillo: arquitectura anterior y problemas; verde: beneficios; naranja: desafíos.
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{01_arquitectura_anterior.png}
+  \caption{Arquitectura síncrona de Wix y escala en 2014.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{02_problemas_sincrono.png}
+  \caption{Problemas del modelo síncrono: acoplamiento y fallas en cascada.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{03_cambio_a_kafka.png}
+  \caption{Crecimiento de la plataforma y adopción de Apache Kafka.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{04_coreografia_beneficios.png}
+  \caption{Paso de orquestación a coreografía y beneficios.}
+\end{figure}
+
+\begin{figure}[h]
+  \centering
+  \includegraphics[width=0.85\textwidth]{05_desafios.png}
+  \caption{Desafíos de la comunicación asíncrona y soluciones.}
+\end{figure}
 
 \subsection*{Sistema conocido de primera mano con el mismo estilo}
-% Ejemplo propio.
+Un ejemplo que conozco es GitHub Actions, que permite automatizar tareas a partir de eventos dentro de un repositorio. Cuando hago un \textit{push} para subir cambios, GitHub detecta ese evento y ejecuta automáticamente un \textit{workflow} que puede correr pruebas, revisar el código o desplegar la aplicación. También pueden activarse notificaciones e integraciones externas, si están configuradas. Lo interesante es que el \textit{push} no espera a que estas tareas terminen, porque cada una se ejecuta de forma independiente. Es la misma idea de coreografía que usa Wix: quien genera el evento no dirige a los demás, sino que cada parte reacciona por su cuenta.
 
 \subsection*{Declaración de uso de inteligencia artificial}
-% Declaración.
+En la elaboración de este trabajo se utilizó Claude (Anthropic) como apoyo para localizar la fuente principal del caso, mejorar la redacción de los apartados del análisis. Las referencias fueron verificadas por mi autor mediante sus DOI, y el contenido final fue revisado y ajustado por el autor, quien asume la responsabilidad de lo presentado.
 
 % ---------------- Referencias ----------------
 \printbibliography[title={Referencias}]
