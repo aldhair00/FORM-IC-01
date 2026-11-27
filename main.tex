@@ -1,5 +1,3 @@
-% FORM-IC-01 — Investigación individual: arquitecturas distribuidas en la industria
-% Caso: Wix — Arquitectura orientada a eventos (EDA) con Apache Kafka
 \documentclass[11pt,a4paper]{article}
 
 \usepackage[utf8]{inputenc}
@@ -16,7 +14,6 @@
 
 \begin{document}
 
-% ---------------- Carátula ----------------
 \begin{titlepage}
   \centering
   {\large Universidad Técnica Estatal de Quevedo\par}
@@ -37,7 +34,6 @@
   {\large Quevedo, noviembre de 2026\par}
 \end{titlepage}
 
-% ---------------- Análisis (1 página) ----------------
 \section*{Descripción del caso}
 Wix es una plataforma para crear sitios web que, con el tiempo, tuvo que adaptar su backend al crecimiento de sus usuarios. En 2014 tenía alrededor de 60 millones de propietarios de sitios y unos 250 microservicios en producción, que atendían cerca de 700 millones de peticiones HTTP al día. Años después, la plataforma llegó a unos 200 millones de propietarios, más de 2000 clústeres de microservicios y alrededor de 500 mil millones de peticiones diarias \cite{perez2021wix}. Este caso analiza cómo cambió la comunicación entre esos microservicios para soportar ese crecimiento.
 
@@ -45,7 +41,7 @@ Wix es una plataforma para crear sitios web que, con el tiempo, tuvo que adaptar
 Antes, la comunicación entre servicios era síncrona y seguía un patrón de orquestación: un servicio, como \textit{BookingService}, controlaba todo el flujo y llamaba a los demás en orden. Era fácil de entender y probar, pero dejaba a los servicios muy acoplados, ya que todos debían estar disponibles al mismo tiempo. Con más tráfico, una falla en un servicio se propagaba a los demás; por ejemplo, \textit{UsersService} llegó a quedarse sin memoria. Por eso, en 2015 Wix incorporó Apache Kafka como bus de mensajes y pasó a un modelo de coreografía, donde cada servicio reacciona a los eventos que le interesan \cite{perez2021wix}.
 
 \section*{Beneficios obtenidos}
-Al publicar eventos, el productor ya no depende de quién los consume, y eso aisló las fallas entre servicios. Kafka funciona como un \textit{buffer} que absorbe los picos de carga, y para escalar basta con agregar consumidores. Entre 2016 y 2021 los productores de Kafka crecieron unas 40 veces y los flujos asíncronos unas 30 veces en cinco años. Además, como Kafka guarda los eventos en un log, un equipo puede crear un nuevo grupo de consumidores para una funcionalidad sin tocar los servicios existentes \cite{perez2021wix}.
+Al publicar eventos, el productor ya no depende de quién los consume, y eso aisló las fallas entre servicios. Kafka funciona como un \textit{buffer} que absorbe los picos de carga, y para escalar basta con agregar consumidores. Entre 2016 y 2021 los productores de Kafka crecieron unas 40 veces. Además, como Kafka guarda los eventos en un log, un equipo puede crear un nuevo grupo de consumidores para una funcionalidad sin tocar los servicios existentes \cite{perez2021wix}.
 
 \section*{Desafíos y cómo los resolvió}
 El cambio trajo más complejidad: rastrear un flujo entre varios servicios es más difícil y los datos tardan en replicarse, por lo que Wix diseñó la interfaz para explicar esas demoras al usuario. Para los mensajes duplicados o fuera de orden, hizo que los consumidores fueran idempotentes. Como el bus se volvió un punto único de falla, creó un productor que guarda primero los eventos en disco local antes de enviarlos a Kafka \cite{perez2021wix}. Estos problemas de consistencia también aparecen como recurrentes en la industria \cite{laigner2021data}.
@@ -55,7 +51,6 @@ Para el PFC tomaría la comunicación por eventos en tareas que no necesitan res
 
 \newpage
 
-% ---------------- Evidencias de autoría ----------------
 \section*{Evidencias de autoría}
 
 \subsection*{Captura de la fuente principal}
@@ -77,8 +72,9 @@ Fragmentos subrayados de la fuente principal \cite{perez2021wix}.
 
 \begin{figure}[h]
   \centering
-  \includegraphics[width=0.8\textwidth]{03_cambio_a_kafka.png}\\[4pt]
-  \includegraphics[width=0.8\textwidth]{03b_cambio_a_kafka.png}
+  \includegraphics[width=0.6\textwidth]{03_cambio_a_kafka.png}\\[4pt]
+  \includegraphics[width=0.6\textwidth]{03b_cambio_a_kafka.png}\\[4pt]
+  \includegraphics[width=0.6\textwidth]{03c_cambio_a_kafka.png}
   \caption{Crecimiento de la plataforma y adopción de Apache Kafka.}
 \end{figure}
 
@@ -102,9 +98,8 @@ Fragmentos subrayados de la fuente principal \cite{perez2021wix}.
 Un ejemplo que conozco es GitHub Actions, que permite automatizar tareas a partir de eventos dentro de un repositorio. Cuando hago un \textit{push} para subir cambios, GitHub detecta ese evento y ejecuta automáticamente un \textit{workflow} que puede correr pruebas, revisar el código o desplegar la aplicación. También pueden activarse notificaciones e integraciones externas, si están configuradas. Lo interesante es que el \textit{push} no espera a que estas tareas terminen, porque cada una se ejecuta de forma independiente. Es la misma idea de coreografía que usa Wix: quien genera el evento no dirige a los demás, sino que cada parte reacciona por su cuenta.
 
 \subsection*{Declaración de uso de inteligencia artificial}
-En la elaboración de este trabajo se utilizó Claude (Anthropic) como apoyo para localizar la fuente principal del caso, mejorar la redacción de los apartados del análisis. Las referencias fueron verificadas por mi autor mediante sus DOI, y el contenido final fue revisado y ajustado por el autor, quien asume la responsabilidad de lo presentado.
+En la elaboración de este trabajo se utilizó Claude (Anthropic) como apoyo para localizar la fuente principal del caso y mejorar la redacción de los apartados del análisis. Las referencias fueron verificadas por mi mediante sus DOI, al igual que el contenido que fue revisado por mi.
 
-% ---------------- Referencias ----------------
 \printbibliography[title={Referencias}]
 
 \end{document}
